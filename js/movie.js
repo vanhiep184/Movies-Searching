@@ -33,22 +33,11 @@
 
 */
 
-$('nav form').on('submit', async(event) => {
-    event.preventDefault();
-
-
-
-    var movieName = $('#search-movie').val();
-
-
-
-    const response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=6be76a04b1d5dc2cdadbde209c765b70&query=${movieName}`);
+async function findMovie(name) {
+    const response = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=6be76a04b1d5dc2cdadbde209c765b70&query=${name}`);
     const movies = await response.json();
 
-    console.log(movies);
-
-
-
+    //    console.log(movies);
     $('.card-group').append(`
         
         <div class="spinner-border m-5" role="status">
@@ -78,6 +67,26 @@ $('nav form').on('submit', async(event) => {
         `);
 
     }
+
+}
+
+async function findActor(name) {
+
+}
+
+$('nav form').on('submit', async(event) => {
+    event.preventDefault();
+
+
+
+    var movieName = $('#search-movie').val();
+
+    let titleShowListMovie = `Result of "${movieName}":`
+
+    $('#title-show-movie').text(titleShowListMovie);
+
+
+    findMovie(movieName);
 
 
 })

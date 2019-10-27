@@ -26,7 +26,17 @@
             </div>
         </div>
 
-        <div class="row">
+        <div id="show-movie" class="row">
+
+
+            <div class="col pt-3">
+                <nav class="navbar navbar-dark bg-dark">
+                    <a id="title-show-movie" class="navbar-brand text-white bg-dark">Top rate</a>
+
+                </nav>
+            </div>
+
+
             <div class="card-group ">
 
 
@@ -48,7 +58,40 @@
     <script src="js/jquery-3.4.1.min.js"></script>
     <script src="js/movie.js"></script>
     <script>
-        $().ready()
+        $().ready(async() => {
+
+            const response = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=6be76a04b1d5dc2cdadbde209c765b70`);
+            const movies = await response.json();
+
+
+
+
+
+            $('.card-group').empty();
+
+
+            for (const movie of movies.results) {
+
+                $('.card-group').append(`
+        
+                    <div class="col-4 py-2 ">
+                        <div class="card" style="width: 18rem;">
+                            <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}" class="card-img-top" alt="...">
+                            <div class="card-body">
+                                <h5 class="card-title">${movie.title}</h5>
+                                <p class="card-text">${movie.overview}</p>
+                        
+                            </div>
+                        </div>
+                    </div>
+                                
+             `);
+
+            }
+
+
+
+        })
     </script>
 
 </body>
