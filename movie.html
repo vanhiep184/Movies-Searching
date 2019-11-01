@@ -18,7 +18,7 @@
         <div class="row">
             <div class="col">
                 <nav class="navbar navbar-dark bg-dark">
-                    <a class="navbar-brand text-white bg-dark" href="/movie.html">Home</a>
+                    <a class="navbar-brand text-white bg-dark" href="/index.html">Home</a>
                     <form class="form-inline">
                         <input class="search-text form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
                         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
@@ -30,19 +30,20 @@
         <div class="row pt-3">
             <div class="col">
                 <nav class="navbar navbar-dark bg-dark">
-                    <a id="title-show-movie" class="navbar-brand text-white bg-dark">Movie Detail</a>
+                    <a id="title-show-movie" class="navbar-brand text-white bg-dark">Detail</a>
 
                 </nav>
             </div>
         </div>
-
+        <!--
         <div class="loading">
             <div class="spinner-border m-5" role="status ">
                 <span class="sr-only ">Loading...</span>
             </div>
         </div>
+        -->
         <div class="container">
-            <div id="movies" class="row"></div>
+            <div id="movie" class="well"></div>
         </div>
 
 
@@ -52,8 +53,7 @@
     <script type="text/javascript " src="js/jquery-3.4.1.min.js "></script>
     <script type="text/javascript " src="js/movie.js "></script>
     <script>
-        $('.loading').fadeOut(1000);
-
+        // $('.loading').fadeOut(1000);
         getMovie();
     </script>
 
