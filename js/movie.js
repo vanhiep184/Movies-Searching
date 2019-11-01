@@ -8,8 +8,10 @@ $(document).ready(() => {
 
             let input = $('.search-text').val();
             //console.log(input);
+            $('.loading').show();
             getMovies(input);
             event.preventDefault();
+            $('.loading').fadeOut(1000);
 
         })
         //Hien danh sách các bộ phim trong Top Rated
