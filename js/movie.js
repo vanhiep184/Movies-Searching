@@ -27,9 +27,9 @@ $(document).ready(() => {
 
             $('#title-show-movie').text(titleShowListMovie);
             $('.loading').show();
-            //getMoviesbyName(input);
-            getMoviesbyActorName(input);
-            $('.loading').fadeOut(1500);
+            getMoviesbyName(input);
+            //getMoviesbyActorName(input);
+            $('.loading').fadeOut(2000);
         }
 
     });
@@ -54,7 +54,7 @@ function showTopRateMove() {
     let url = `https://api.themoviedb.org/3/movie/top_rated?api_key=6be76a04b1d5dc2cdadbde209c765b70`;
     //console.log(url);
     fetchData(url)
-        .then(data => generateMovies(data));
+        .then(data => generateMovies(data.results));
 }
 
 
@@ -70,7 +70,7 @@ function getMoviesbyName(input) {
     let url = URL + API_KEY + query + input
     console.log(url);
     fetchData(url)
-        .then(data => generateMovies(data));
+        .then(data => generateMovies(data.results));
 }
 
 function getMoviesbyActorName(input) {
@@ -82,7 +82,7 @@ function getMoviesbyActorName(input) {
 
 function generateMoviesbyActor(data) {
     console.log(data)
-    outputListMovies = '';
+    let outputListMovies = '';
     for (const movie of data) {
         console.log(movie);
         for (const childMovie of movie.known_for) {
@@ -133,10 +133,9 @@ function getInfoMovieFromOMDb(imdb_id) {
 }
 
 function generateMovies(data) {
-    console.log(data);
-    let movies = data.results;
+    let movies = data;
     //console.log(movies);
-    outputListMovies = '';
+    let outputListMovies = '';
     $.each(movies, (index, movie) => {
         let shortedOverView = getOverView(movie.overview);
         //console.log(movie);
@@ -162,7 +161,9 @@ function generateMovie(data) {
     console.log(data);
     let movie = data;
     //console.log(movies);
-    outputDetailMovie = `
+
+    let listActors = generateActors(movie.Actors);
+    let outputDetailMovie = `
     <div class= "container m-3 bg-secondary">
         <div class="row pt-3">
             <div class="col-md-4">
@@ -174,7 +175,7 @@ function generateMovie(data) {
                     <li class="list-group-item"><strong>Rated:</strong> ${movie.Rated}</li>
                     <li class="list-group-item"><strong>Released:</strong> ${movie.Released}</li>
                     <li class="list-group-item"><strong>Director:</strong> ${movie.Director}</li>
-                    <li class="list-group-item"><strong>Actors:</strong> ${movie.Actors}</li>                    
+                    <li class="list-group-item"><strong>Actors:</strong> ${listActors}</li>                    
                     <li class="list-group-item"><strong>Genres:</strong> ${movie.Genre}</li>                    
                 </ul>
             </div>
@@ -218,25 +219,107 @@ function getGenresMovie(Genres) {
 }
 
 function generateActors(listActors) {
-
-
-
-    return 1;
+    let outputActors = '';
+    let begin = 0;
+    let end = 0;
+    while (listActors.indexOf(',') != -1) {
+        end = listActors.indexOf(',');
+        outputActors += `<span><a onclick="showActorInfor('${listActors.slice(0, end)}')" href = "#">` + listActors.slice(0, end) + '</a></span>,';
+        begin = end + 1;
+        listActors = listActors.substring(begin);
+    }
+    outputActors += `<span><a onclick="showActorInfor('${listActors}')" href = "#">` + listActors + '</a></span>';
+    return outputActors;
 }
 
 
-function Actor(id, name, profile_path, known_for, creaditAll) {
+function Actor(id, name, profile_path, known_for, biography) {
     this.id = id;
     this.name = name;
     this.profile_path = profile_path;
     this.known_for = known_for;
-    this.creaditAll = creaditAll;
+    this.biography = biography;
+
 }
 
 function getActor(nameActor) {
-
+    let url = `https://api.themoviedb.org/3/search/person?api_key=` + API_KEY + query + nameActor;
+    console.log(url);
+    return fetchData(url)
+        .then(data => data.results[0])
+        .then(function(actor) {
+            var actorDetail = actor;
+            console.log(actorDetail.id);
+            return fetch(`https://api.themoviedb.org/3/person/${actorDetail.id}?api_key=` + API_KEY)
+                .then(res => res.json())
+                .then(data => data.biography)
+                .then(function(biography) {
+                    var actorBiography = biography;
+                    return Promise.all([actorDetail, actorBiography])
+                })
+                .then(function(actorData) {
+                    let actorInfor = actorData[0];
+                    let actorBio = actorData[1];
+                    return new Actor(actorInfor.id, actorInfor.name, actorInfor.profile_path, actorInfor.known_for, actorBio)
+                })
+        })
 }
 
+function showActorInfor(nameActor) {
+    $('.loading').show();
+
+    let ActorObject = getActor(nameActor);
+    ActorObject.then(data => generateActorToShowInfor(data))
+}
+
+function generateActorToShowInfor(data) {
+    console.log(data);
+    let outputDetailActor = `
+    <div class= "container m-3 bg-secondary">
+        <div class="row pt-3">
+            <div class="col-md-4">
+                <img src="https://image.tmdb.org/t/p/w500/${data.profile_path}" class="thumbnail">
+            </div>
+            <div class="col-md-8 ">
+                <h2 class = "text-white pb-5 pt-3">${data.name}</h2>
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Biography:</strong></br> ${data.biography}</li>             
+                </ul>
+            </div>
+        </div>
+        <div class="row-md pt-3 pb-3 ">
+                <div class = "list-movies">List Movies</div>
+                <hr>
+                <a href="index.html" class="btn btn-default">Go back to Home</a>
+        </div>
+        </div>
+`;
+
+    //Show movie known_for 
+    movies = data.known_for;
+    let ListMovies = 'List Movies';
+    $.each(movies, (index, movie) => {
+        let shortedOverView = getOverView(movie.overview);
+        //console.log(movie);
+        ListMovies += `
+           <div onclick="getDetailMovie('${movie.id}')" class="movie-card col-md-3 pt-3 text-white">
+                <div id = "${movie.id}" class="well text-center">
+                    <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}">
+                    <h5 class= "pt-1">${movie.title}</h5>
+                    <h6 class="card-vote_average"><strong>Rated:</strong> ${movie.vote_average}</h6>
+                    <p class="card-text"><h6>${shortedOverView}</h6></p>
+                    <a onclick="getDetailMovie('${movie.id}')" class="btn btn-primary btn-sm" href="#">See detail...</a>
+                </div>
+            </div>
+          
+        `;
+    });
+
+
+    $('#movie').html(outputDetailActor);
+    $('div.list-movies').html(ListMovies);
+    $('.loading').fadeOut(2000);
+}
 
 
 function previousPage(numberOfCurrentPage, totalPage) {
