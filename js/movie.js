@@ -13,17 +13,24 @@ const buttonPreAndNextPage = `
 showTopRateMove();
 
 $(document).ready(() => {
-
     //Hien danh sách các bộ phim trong Top Rated
-
     $('nav form').on('submit', (event) => {
-        let input = $('.search-text').val();
-        //console.log(input);
-        //window.location = 'index.html';
-        $('.loading').show();
-        getMovies(input);
         event.preventDefault();
-        $('.loading').fadeOut(1500);
+
+        let input = $('.search-text').val();
+        if (input == "") {
+            return;
+        } else {
+            //console.log(input);
+            //window.location = 'index.html';
+            let titleShowListMovie = `Searching: ${input}`
+
+            $('#title-show-movie').text(titleShowListMovie);
+            $('.loading').show();
+            //getMoviesbyName(input);
+            getMoviesbyActorName(input);
+            $('.loading').fadeOut(1500);
+        }
 
     });
 
@@ -48,8 +55,6 @@ function showTopRateMove() {
     //console.log(url);
     fetchData(url)
         .then(data => generateMovies(data));
-
-
 }
 
 
@@ -61,12 +66,45 @@ async function fetchData(url) {
 }
 
 //Lấy dữ liệu phim từ ten phim tren server
-function getMovies(input) {
+function getMoviesbyName(input) {
     let url = URL + API_KEY + query + input
     console.log(url);
     fetchData(url)
         .then(data => generateMovies(data));
+}
 
+function getMoviesbyActorName(input) {
+    let url = `https://api.themoviedb.org/3/search/person?api_key=` + API_KEY + query + input;
+    console.log(url);
+    fetchData(url)
+        .then(data => generateMoviesbyActor(data.results));
+}
+
+function generateMoviesbyActor(data) {
+    console.log(data)
+    outputListMovies = '';
+    for (const movie of data) {
+        console.log(movie);
+        for (const childMovie of movie.known_for) {
+            let shortedOverView = getOverView(childMovie.overview);
+            //console.log(movie);
+            console.log(childMovie.id);
+            outputListMovies += `
+                <div onclick="getDetailMovie('${childMovie.id}')" class="movie-card col-md-3 pt-3 text-white">
+                    <div id = "${childMovie.id}" class="well text-center">
+                        <img src="https://image.tmdb.org/t/p/w500/${childMovie.poster_path}">
+                        <h5 class= "pt-1">${childMovie.title}</h5>
+                        <h6 class="card-vote_average"><strong>Rated:</strong> ${childMovie.vote_average}</h6>
+                        <p class="card-text">${shortedOverView}</p>
+                        <a onclick="getDetailMovie('${childMovie.id}')" class="btn btn-primary btn-sm" href="#">See detail...</a>
+                    </div>
+                </div>
+               
+            `;
+
+        }
+    }
+    $('#movies').html(outputListMovies);
 
 }
 
@@ -100,7 +138,6 @@ function generateMovies(data) {
     //console.log(movies);
     outputListMovies = '';
     $.each(movies, (index, movie) => {
-
         let shortedOverView = getOverView(movie.overview);
         //console.log(movie);
 
@@ -137,7 +174,7 @@ function generateMovie(data) {
                     <li class="list-group-item"><strong>Rated:</strong> ${movie.Rated}</li>
                     <li class="list-group-item"><strong>Released:</strong> ${movie.Released}</li>
                     <li class="list-group-item"><strong>Director:</strong> ${movie.Director}</li>
-                    <li class="list-group-item"><strong>Actors:</strong>${movie.Actors}</li>                    
+                    <li class="list-group-item"><strong>Actors:</strong> ${movie.Actors}</li>                    
                     <li class="list-group-item"><strong>Genres:</strong> ${movie.Genre}</li>                    
                 </ul>
             </div>
@@ -147,7 +184,6 @@ function generateMovie(data) {
                 <h3>Over view</h3>
                 ${movie.Plot}
                 <hr>
-                <a href="http://imdb.com/title/${movie.imdbID}" target="_blank" class="btn btn-primary">View IMDB</a>
                 <a href="index.html" class="btn btn-default">Go back to Home</a>
             </div>
         </div>
@@ -164,8 +200,6 @@ function getDetailMovie(id) {
 }
 
 
-
-
 function getOverView(overview) {
     if (overview.length > 50) {
         overview = overview.substr(0, 100) + ' ...';
@@ -174,15 +208,6 @@ function getOverView(overview) {
 }
 
 
-function getDirectorMovie(id) {
-    return 1;
-}
-
-
-function getActorsMovie(id) {
-    return 1;
-}
-
 function getGenresMovie(Genres) {
     let listGenres = ''
     for (let Genre of Genres) {
@@ -190,6 +215,13 @@ function getGenresMovie(Genres) {
     }
     listGenres = listGenres.substring(0, listGenres.length - 2) + '.'
     return listGenres;
+}
+
+function generateActors(listActors) {
+
+
+
+    return 1;
 }
 
 
