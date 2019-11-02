@@ -29,13 +29,10 @@ $(document).ready(() => {
 
     $('#movies').on('mouseover', '.movie-card.col-md-3.pt-3.text-white', (event) => {
         //console.log($('#movies').children());
-        console.log(event);
-        console.log($(this));
         $(event.currentTarget).addClass("bg-secondary");
         // $(event.currentTarget).css({ 'background-color': 'transparent' });
     });
     $('#movies').on('mouseout', '.movie-card.col-md-3.pt-3.text-white', (event) => {
-
         $(event.currentTarget).removeClass("bg-secondary");
         // $(event.currentTarget).css({ 'background-color': 'transparent' });
     });
@@ -73,15 +70,29 @@ function getMovies(input) {
 
 }
 
+
+//APi from OMDb APi
 function getMovie() {
     let movieID = sessionStorage.getItem('movieID');
     console.log(movieID);
-    let url = `https://api.themoviedb.org/3/movie/${movieID}?api_key=6be76a04b1d5dc2cdadbde209c765b70`
-    console.log(url);
-    fetchData(url)
-        .then(data => generateMovie(data));
+    getImdbID(movieID);
 }
 
+function getImdbID(id) {
+    let url = `https://api.themoviedb.org/3/movie/${id}?api_key=6be76a04b1d5dc2cdadbde209c765b70`
+    console.log(url);
+    fetchData(url)
+        .then(data => getInfoMovieFromOMDb(data.imdb_id));
+
+}
+
+function getInfoMovieFromOMDb(imdb_id) {
+    let url = `http://www.omdbapi.com?i=${imdb_id}&apikey=411051e9`;
+    console.log(url);
+    fetchData(url)
+        // .then(data => console.log(data));
+        .then(data => generateMovie(data));
+}
 
 function generateMovies(data) {
     console.log(data);
@@ -91,6 +102,7 @@ function generateMovies(data) {
     $.each(movies, (index, movie) => {
 
         let shortedOverView = getOverView(movie.overview);
+        //console.log(movie);
 
         outputListMovies += `
             <div onclick="getDetailMovie('${movie.id}')" class="movie-card col-md-3 pt-3 text-white">
@@ -113,32 +125,29 @@ function generateMovie(data) {
     console.log(data);
     let movie = data;
     //console.log(movies);
-
     outputDetailMovie = `
     <div class= "container m-3 bg-secondary">
         <div class="row pt-3">
             <div class="col-md-4">
-                <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}" class="thumbnail">
+                <img src="${movie.Poster}" class="thumbnail">
             </div>
             <div class="col-md-8 ">
-                <h2 class = "text-white pb-5 pt-3">${movie.title}</h2>
+                <h2 class = "text-white pb-5 pt-3">${movie.Title}</h2>
                 <ul class="list-group">
-                    <li class="list-group-item"><strong>Genre:</strong> ${movie.genres}</li>
-                    <li class="list-group-item"><strong>Released:</strong> ${movie.release_date}</li>
-                    <li class="list-group-item"><strong>Rated:</strong> NULL</li>
-                    <li class="list-group-item"><strong>IMDB Rating:</strong> ${movie.vote_average}</li>
-                    <li class="list-group-item"><strong>Director:</strong> NULL </li>
-                    <li class="list-group-item"><strong>Writer:</strong> NULL</li>
-                    <li class="list-group-item"><strong>Actors:</strong> NULL </li>
+                    <li class="list-group-item"><strong>Rated:</strong> ${movie.Rated}</li>
+                    <li class="list-group-item"><strong>Released:</strong> ${movie.Released}</li>
+                    <li class="list-group-item"><strong>Director:</strong> ${movie.Director}</li>
+                    <li class="list-group-item"><strong>Actors:</strong>${movie.Actors}</li>                    
+                    <li class="list-group-item"><strong>Genres:</strong> ${movie.Genre}</li>                    
                 </ul>
             </div>
         </div>
         <div class="row-md-3 pt-3 pb-3 ">
             <div class="well text-white">
                 <h3>Over view</h3>
-                ${movie.overview}
+                ${movie.Plot}
                 <hr>
-                <a href="http://imdb.com/title/${movie.imdb_id}" target="_blank" class="btn btn-primary">View IMDB</a>
+                <a href="http://imdb.com/title/${movie.imdbID}" target="_blank" class="btn btn-primary">View IMDB</a>
                 <a href="index.html" class="btn btn-default">Go back to Home</a>
             </div>
         </div>
@@ -154,6 +163,9 @@ function getDetailMovie(id) {
     return false;
 }
 
+
+
+
 function getOverView(overview) {
     if (overview.length > 50) {
         overview = overview.substr(0, 100) + ' ...';
@@ -161,23 +173,39 @@ function getOverView(overview) {
     return overview;
 }
 
-function getRatedMovie(id) {
-    return 1;
-}
 
 function getDirectorMovie(id) {
     return 1;
 }
 
-function getWriterMovie(id) {
+
+function getActorsMovie(id) {
     return 1;
+}
+
+function getGenresMovie(Genres) {
+    let listGenres = ''
+    for (let Genre of Genres) {
+        listGenres += `${Genre.name}, `;
+    }
+    listGenres = listGenres.substring(0, listGenres.length - 2) + '.'
+    return listGenres;
+}
+
+
+function Actor(id, name, profile_path, known_for, creaditAll) {
+    this.id = id;
+    this.name = name;
+    this.profile_path = profile_path;
+    this.known_for = known_for;
+    this.creaditAll = creaditAll;
+}
+
+function getActor(nameActor) {
 
 }
 
-function getActorMovie(id) {
-    return 1;
 
-}
 
 function previousPage(numberOfCurrentPage, totalPage) {
 
