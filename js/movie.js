@@ -2,20 +2,46 @@ const URL = "https://api.themoviedb.org/3/search/movie?api_key=";
 const API_KEY = "6be76a04b1d5dc2cdadbde209c765b70";
 const language = "&language=en-US";
 const query = "&query=";
+const buttonPreAndNextPage = `
+    <div id="pagination" class="row bg-dark pb-3">
+        <div class="col">
+            <button type="button" onClick=previousPage(numberOfCurrentPage) class="btn btn-secondary btn-sm">Previous Page</button>
+            <button type="button" class="btn btn-secondary btn-sm">Next Page</button>
+        </div>
+    </div>
+`;
+showTopRateMove();
 
 $(document).ready(() => {
+
+    //Hien danh sách các bộ phim trong Top Rated
+
     $('nav form').on('submit', (event) => {
+        let input = $('.search-text').val();
+        //console.log(input);
+        //window.location = 'index.html';
+        $('.loading').show();
+        getMovies(input);
+        event.preventDefault();
+        $('.loading').fadeOut(1500);
 
-            let input = $('.search-text').val();
-            //console.log(input);
-            $('.loading').show();
-            getMovies(input);
-            event.preventDefault();
-            $('.loading').fadeOut(1000);
+    });
 
-        })
-        //Hien danh sách các bộ phim trong Top Rated
-    showTopRateMove();
+    $('#movies').on('mouseover', '.movie-card.col-md-3.pt-3.text-white', (event) => {
+        //console.log($('#movies').children());
+        console.log(event);
+        console.log($(this));
+        $(event.currentTarget).addClass("bg-secondary");
+        // $(event.currentTarget).css({ 'background-color': 'transparent' });
+    });
+    $('#movies').on('mouseout', '.movie-card.col-md-3.pt-3.text-white', (event) => {
+
+        $(event.currentTarget).removeClass("bg-secondary");
+        // $(event.currentTarget).css({ 'background-color': 'transparent' });
+    });
+
+
+
 })
 
 //Hien danh sách các bộ phim được đánh giá cao.
@@ -30,6 +56,12 @@ function showTopRateMove() {
 }
 
 
+async function fetchData(url) {
+    return await fetch(url)
+        //.then(res => console.log(res))
+        .then(res => res.json())
+        .catch(error => console.log(`Something wrong when get Data : `, error))
+}
 
 //Lấy dữ liệu phim từ ten phim tren server
 function getMovies(input) {
@@ -41,41 +73,6 @@ function getMovies(input) {
 
 }
 
-async function fetchData(url) {
-    return await fetch(url)
-        //.then(res => console.log(res))
-        .then(res => res.json())
-        .catch(error => console.log(`Something wrong when get Data : `, error))
-}
-
-function generateMovies(data) {
-    console.log(data);
-    let movies = data.results;
-    //console.log(movies);
-    outputListMovies = '';
-    $.each(movies, (index, movie) => {
-        outputListMovies += `
-            <div class="col-md-3 text-white bg-dark">
-                <div id = "${movie.id}" class="well text-center">
-                    <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}">
-                    <h5>${movie.title}</h5>
-                    <h6 class="card-vote_average">Voted: ${movie.vote_average}</h6>
-                <!--<p class="card-text">${movie.overview}</p>-->
-                    <a onclick="getDetailMovie('${movie.id}')" class="btn btn-primary" href="#">Movie Details</a>
-                </div>
-            </div>
-           
-        `;
-    });
-    $('#movies').html(outputListMovies);
-}
-
-function getDetailMovie(id) {
-    sessionStorage.setItem('movieID', id);
-    window.location = 'movie.html';
-    return false;
-}
-
 function getMovie() {
     let movieID = sessionStorage.getItem('movieID');
     console.log(movieID);
@@ -85,12 +82,40 @@ function getMovie() {
         .then(data => generateMovie(data));
 }
 
+
+function generateMovies(data) {
+    console.log(data);
+    let movies = data.results;
+    //console.log(movies);
+    outputListMovies = '';
+    $.each(movies, (index, movie) => {
+
+        let shortedOverView = getOverView(movie.overview);
+
+        outputListMovies += `
+            <div onclick="getDetailMovie('${movie.id}')" class="movie-card col-md-3 pt-3 text-white">
+                <div id = "${movie.id}" class="well text-center">
+                    <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}">
+                    <h5 class= "pt-1">${movie.title}</h5>
+                    <h6 class="card-vote_average"><strong>Rated:</strong> ${movie.vote_average}</h6>
+                    <p class="card-text">${shortedOverView}</p>
+                    <a onclick="getDetailMovie('${movie.id}')" class="btn btn-primary btn-sm" href="#">See detail...</a>
+                </div>
+            </div>
+           
+        `;
+    });
+
+    $('#movies').html(outputListMovies);
+}
+
 function generateMovie(data) {
     console.log(data);
     let movie = data;
     //console.log(movies);
 
     outputDetailMovie = `
+    <div class= "container m-3 bg-secondary">
         <div class="row pt-3">
             <div class="col-md-4">
                 <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}" class="thumbnail">
@@ -108,7 +133,7 @@ function generateMovie(data) {
                 </ul>
             </div>
         </div>
-        <div class="row pt-3">
+        <div class="row-md-3 pt-3 pb-3 ">
             <div class="well text-white">
                 <h3>Over view</h3>
                 ${movie.overview}
@@ -117,8 +142,47 @@ function generateMovie(data) {
                 <a href="index.html" class="btn btn-default">Go back to Home</a>
             </div>
         </div>
-  
+        </div>
 `;
     $('#movie').html(outputDetailMovie);
+
+}
+
+function getDetailMovie(id) {
+    sessionStorage.setItem('movieID', id);
+    window.location = 'movie.html';
+    return false;
+}
+
+function getOverView(overview) {
+    if (overview.length > 50) {
+        overview = overview.substr(0, 100) + ' ...';
+    }
+    return overview;
+}
+
+function getRatedMovie(id) {
+    return 1;
+}
+
+function getDirectorMovie(id) {
+    return 1;
+}
+
+function getWriterMovie(id) {
+    return 1;
+
+}
+
+function getActorMovie(id) {
+    return 1;
+
+}
+
+function previousPage(numberOfCurrentPage, totalPage) {
+
+}
+
+function nextPage(numberOfCurrentPage, totalPage) {
 
 }

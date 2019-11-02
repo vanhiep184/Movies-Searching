@@ -9,7 +9,7 @@ body {
 
 @media(min-width: 960px) {
     #movies .col-md-3 .well {
-        height: 450px;
+        height: 550px;
     }
     #movies .col-md-3 img {
         height: 300px;
@@ -25,4 +25,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+#pagination .col {
+    display: flex;
+    justify-content: center;
 }
