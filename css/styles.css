@@ -3,15 +3,18 @@ body {
 }
 
 #movies img,
+#movies-actor img,
 #movie img {
     width: 100%;
 }
 
 @media(min-width: 960px) {
-    #movies .col-md-3 .well {
+    #movies .col-md-3 .well,
+    #movies-actor .col-md-3 .well {
         height: 600px;
     }
-    #movies .col-md-3 img {
+    #movies .col-md-3 img,
+    #movies-actor .col-md-3 img {
         height: 350px;
     }
 }

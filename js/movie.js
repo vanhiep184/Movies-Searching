@@ -2,6 +2,7 @@ const URL = "https://api.themoviedb.org/3/search/movie?api_key=";
 const API_KEY = "6be76a04b1d5dc2cdadbde209c765b70";
 const language = "&language=en-US";
 const query = "&query=";
+const page = "&page=";
 const buttonPreAndNextPage = `
     <div id="pagination" class="row bg-dark pb-3">
         <div class="col">
@@ -27,7 +28,7 @@ $(document).ready(() => {
 
             $('#title-show-movie').text(titleShowListMovie);
             $('.loading').show();
-            getMoviesbyName(input);
+            getMoviesbyName(input, 1);
             //getMoviesbyActorName(input);
             $('.loading').fadeOut(2000);
         }
@@ -66,8 +67,8 @@ async function fetchData(url) {
 }
 
 //Lấy dữ liệu phim từ ten phim tren server
-function getMoviesbyName(input) {
-    let url = URL + API_KEY + query + input
+function getMoviesbyName(input, pageNum) {
+    let url = URL + API_KEY + query + input + page + pageNum;
     console.log(url);
     fetchData(url)
         .then(data => generateMovies(data.results));
@@ -104,7 +105,7 @@ function generateMoviesbyActor(data) {
 
         }
     }
-    $('#movies').html(outputListMovies);
+    $('#movies-actor').html(outputListMovies);
 
 }
 
@@ -136,6 +137,7 @@ function generateMovies(data) {
     let movies = data;
     //console.log(movies);
     let outputListMovies = '';
+
     $.each(movies, (index, movie) => {
         let shortedOverView = getOverView(movie.overview);
         //console.log(movie);
@@ -153,6 +155,7 @@ function generateMovies(data) {
            
         `;
     });
+
 
     $('#movies').html(outputListMovies);
 }
@@ -287,22 +290,30 @@ function generateActorToShowInfor(data) {
                 </ul>
             </div>
         </div>
-        <div class="row-md pt-3 pb-3 ">
-                <div class = "list-movies">List Movies</div>
-                <hr>
-                <a href="index.html" class="btn btn-default">Go back to Home</a>
+        <div class="row pt-3 pb-3">
+                <div class="col">
+                    <h3">List Movies</h3>
+                </div>
+        </div>
+        <div class= "container">
+            <div class="list-movie row-md pt-3 pb-3">
+                
+            </div>
+        </div>
+        <div class="row-md pt-3 pb-3">
+                <a href="index.html" class="btn btn-secondary">Go back to Home</a>
         </div>
         </div>
 `;
 
     //Show movie known_for 
     movies = data.known_for;
-    let ListMovies = 'List Movies';
+    let ListMovies = '';
     $.each(movies, (index, movie) => {
         let shortedOverView = getOverView(movie.overview);
         //console.log(movie);
         ListMovies += `
-           <div onclick="getDetailMovie('${movie.id}')" class="movie-card col-md-3 pt-3 text-white">
+           <div onclick="getDetailMovie('${movie.id}')" class="movie-card col pt-3 text-white">
                 <div id = "${movie.id}" class="well text-center">
                     <img src="https://image.tmdb.org/t/p/w500/${movie.poster_path}">
                     <h5 class= "pt-1">${movie.title}</h5>
@@ -317,15 +328,15 @@ function generateActorToShowInfor(data) {
 
 
     $('#movie').html(outputDetailActor);
-    $('div.list-movies').html(ListMovies);
+    $('div.list-movie.row-md.pt-3.pb-3 ').html(ListMovies);
     $('.loading').fadeOut(2000);
 }
 
 
-function previousPage(numberOfCurrentPage, totalPage) {
+function previousPage(input, numberOfCurrentPage, totalPage) {
 
 }
 
-function nextPage(numberOfCurrentPage, totalPage) {
+function nextPage(input, numberOfCurrentPage, totalPage) {
 
 }
